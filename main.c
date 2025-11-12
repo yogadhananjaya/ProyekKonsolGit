@@ -1,6 +1,10 @@
 #include <stdio.h>
 
-int main(void) {
-    printf("Hello, World!\n");
+void helloworld() {
+    printf("Hello, World from a function!\n");
+}
+int main() {
+    printf("ini adalah proyek konsol saya.\n");
+    helloworld();
     return 0;
 }
