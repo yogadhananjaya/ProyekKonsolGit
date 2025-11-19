@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-
 typedef struct {
     int id;
     char name[25];
@@ -11,8 +10,9 @@ typedef StudentData StudentTab[100];
 
 void copyStudent(char *StudentFile, StudentTab students, int *n);
 void countGraduates(char *StudentFile, int *nOver2);
-void printGraduates(StudentTab students, int n);
+void printAllStudents(StudentTab students, int n);
 void exportToCsv(char *StudentFile, StudentTab students, int n);
+void averageGradeFromArray(StudentTab students, int n);
 
 int main() {
     StudentTab students;
@@ -21,13 +21,16 @@ int main() {
 
     copyStudent("StudentFile.dat", students, &n);
 
-    countGraduates("StudentFile.dat", &numberOfGraduates);
-    printf("\nNumber of Graduates: %d\n", numberOfGraduates);
+    printf("\n-- Lihat Data Mahasiswa --\n\n");
+    printAllStudents(students, n);
 
-    printf("\n--- Graduates List ---\n");
-    printGraduates(students, n);
+    countGraduates("StudentFile.dat", &numberOfGraduates);
+    printf("\nJumlah Mahasiswa Lulus : %d\n", numberOfGraduates);
 
     exportToCsv("StudentOutput.csv", students, n);
+
+    printf("\n-- Hitung Rata-rata Grade Mahasiswa --\n");
+    averageGradeFromArray(students, n);
 
     return 0;
 }
@@ -36,6 +39,7 @@ void copyStudent(char *StudentFile, StudentTab students, int *n) {
     FILE *stdFile = fopen(StudentFile, "rb");
     if (stdFile == NULL) {
         printf("Error opening %s (file not found?)\n", StudentFile);
+        *n = 0;
         return;
     }
 
@@ -70,13 +74,11 @@ void countGraduates(char *StudentFile, int *nOver2) {
     fclose(stdFile);
 }
 
-void printGraduates(StudentTab students, int n) {
+void printAllStudents(StudentTab students, int n) {
     for (int i = 0; i < n; i++) {
-        if (students[i].grade > 2.0) {
-            printf("ID: %d\n", students[i].id);
-            printf("Name: %s\n", students[i].name);
-            printf("Grade: %.2f\n\n", students[i].grade);
-        }
+        printf("ID: %d\n", students[i].id);
+        printf("Name: %s\n", students[i].name);
+        printf("Grade: %.2f\n\n", students[i].grade);
     }
 }
 
@@ -99,5 +101,20 @@ void exportToCsv(char *StudentFile, StudentTab students, int n) {
 
     fclose(file);
     printf("Data successfully saved to %s\n", StudentFile);
-    getchar();
+}
+
+void averageGradeFromArray(StudentTab students, int n) {
+    if (n == 0) {
+        printf("Tidak ada data mahasiswa.\n");
+        return;
+    }
+
+    float total = 0.0;
+    for (int i = 0; i < n; i++) {
+        total += students[i].grade;
+    }
+
+    float avg = total / n;
+
+    printf("Rata-rata Grade %d Mahasiswa adalah : %.2f\n", n, avg);
 }
