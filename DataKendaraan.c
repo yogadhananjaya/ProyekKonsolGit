@@ -1,142 +1,177 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
-typedef struct kendaraan {
+typedef struct {
     int id;
     char plat[20];
-    char jenis[20];
+    char jenis[30];
     int tahun;
-}kendaraan;
+} Kendaraan;
 
-void tambahKendaraan(char* transFile);
-void lihatKendaraan(char* transFile);
-void ubahPlat(char * transFile);
-void hapusdata(char * transFile);
+const char *KENDARAAN_FILE = "kendaraan.dat";
+
+void tambahKendaraan();
+void lihatKendaraan();
+void ubahPlat();
+void hapusKendaraan();
+void resetData();
+int cekIdAda(int id);
 
 int main() {
     int pilih;
-    char transFile[50]= "kendaraan.dat";
 
     do {
-        printf("\n****DATA KENDARAAN****\n");
-        printf("1. Tambah Kendaraan \n");
-        printf("2. Lihat Kendaraan \n");
-        printf("3. Ubah Plat \n");
-        printf("4. Hapus Data \n");
-        printf("5. Keluar \n");
-        printf("Pilih Menu :\n");
-        scanf("%d",&pilih);
+        printf("\n****** DATA KENDARAAN ******\n\n");
+        printf("[1] Tambah Data Kendaraan\n");
+        printf("[2] Lihat Data Kendaraan\n");
+        printf("[3] Ubah Data Kendaraan\n");
+        printf("[4] Hapus Data Kendaraan\n");
+        printf("[5] Keluar Program\n");
+        printf("Pilih Menu : ");
 
-        switch (pilih) {
-            case 1: tambahKendaraan(transFile); break;
-                case 2: lihatKendaraan(transFile); break;
-                case 3: ubahPlat(transFile); break;
-                case 4: hapusdata(transFile); break;
-                case 5: printf("Keluar...\n"); break;
-                default: printf("Menu Tidak Valid!\n");
+        if (scanf("%d", &pilih) != 1) {
+            while(getchar() != '\n');
+            pilih = 0;
+        }
+
+        switch(pilih) {
+            case 1: tambahKendaraan(); break;
+            case 2: lihatKendaraan(); break;
+            case 3: ubahPlat(); break;
+            case 4: hapusKendaraan(); break;
+            case 5: printf("\nProgram selesai.\n"); break;
+            default: printf("Pilihan tidak valid.\n");
         }
     } while (pilih != 5);
+
     return 0;
 }
-void tambahkendaraan(char* transFile) {
-    FILE* file = fopen(transFile, "ab");
-    kendaraan k ;
 
-    printf("ID : ");
-    scanf("%d",&k.id);
-    printf("Plat : ");
-    scanf("%d",&k.plat);
-    printf("Jenis : ");
-    scanf("%d",&k.jenis);
-    printf("Tahun : ");
-    scanf("%d",&k.tahun);
-
-    fwrite (&k, sizeof(k), 1, file);
-    fclose(file);
-
-    printf("Data Berhasil Ditambahkan\n");
+int cekIdAda(int id) {
+    FILE *f = fopen(KENDARAAN_FILE, "rb");
+    Kendaraan k;
+    if (!f) return 0;
+    while (fread(&k, sizeof(Kendaraan), 1, f)) {
+        if (k.id == id) { fclose(f); return 1; }
+    }
+    fclose(f);
+    return 0;
 }
-void lihatKendaran(char* transFile) {
-    FILE* file = fopen(transFile, "rb");
-    kendaraan k ;
 
-    if (!file) {
-        printf ("Arsip tidak ada\n");
+void tambahKendaraan() {
+    FILE *f = fopen(KENDARAAN_FILE, "ab");
+    Kendaraan k;
+
+    printf("\n*** Tambah Data Kendaraan ***\n\n");
+
+    while (1) {
+        printf("ID Kendaraan   : ");
+        scanf("%d", &k.id);
+
+        if (k.id == 9999) {
+             printf("Input selesai.\n");
+             break;
+        }
+
+        if (cekIdAda(k.id)) {
+            printf("ID %d sudah ada. Gunakan ID lain.\n\n", k.id);
+            continue;
+        }
+
+        printf("Nomor Plat     : ");
+        scanf(" %[^\n]", k.plat);
+        printf("Jenis Kendaraan: ");
+        scanf(" %[^\n]", k.jenis);
+        printf("Tahun Produksi : ");
+        scanf("%d", &k.tahun);
+
+        printf("\n");
+        fwrite(&k, sizeof(Kendaraan), 1, f);
+        fflush(f);
+    }
+    fclose(f);
+}
+
+void lihatKendaraan() {
+    FILE *f = fopen(KENDARAAN_FILE, "rb");
+    Kendaraan k;
+
+    if (!f) {
+        printf("\n*** Lihat Data Kendaraan ***\n");
+        printf("\nData masih kosong.\n");
         return;
     }
-    printf("\n****DATA KENDARAAN****\n");
-    while (fread(&k, sizeof(kendaraan), 1, file)) {
-        printf("ID : %d\n", k.id);
-        printf("Plat : %s\n", k.plat);
-        printf("Jenis : %s\n", k.jenis);
-        printf("Tahun : %d\n", k.tahun);
+
+    printf("\n*** Lihat Data Kendaraan ***\n");
+
+    while (fread(&k, sizeof(Kendaraan), 1, f)) {
+        printf("\nID Kendaraan   : %d\n", k.id);
+        printf("Nomor Plat     : %s\n", k.plat);
+        printf("Jenis Kendaraan : %s\n", k.jenis);
+        printf("Tahun Produksi : %d\n", k.tahun);
     }
-    fclose(file);
+    fclose(f);
 }
-void ubahPlat(char* transFile) {
-    FILE* file = fopen(transFile, "rb+");
-    kendaraan k ;
-    int target ;
-    int found = 0;
 
-    if (!file) {
-        printf ("Arsip tidak ada\n");
-        return;
-    }
-    printf("Masukkan ID Kendaraan : ");
-    scanf("%d",&target);
+void ubahPlat() {
+    FILE *f = fopen(KENDARAAN_FILE, "rb+");
+    Kendaraan k;
+    int target, found = 0;
 
-    while (fread(&k, sizeof(kendaraan), 1, file)) {
+    if (!f) { printf("\nFile tidak ditemukan.\n"); return; }
+
+    printf("\n*** Ubah Data Kendaraan ***\n");
+    printf("ID Kendaraan : ");
+    scanf("%d", &target);
+
+    while (fread(&k, sizeof(Kendaraan), 1, f)) {
         if (k.id == target) {
-            printf("Nomor Plat Baru :");
-            scanf("%s",&k.plat);
+            printf("\nMasukkan nomor plat baru : ");
+            scanf(" %[^\n]", k.plat);
 
-            fseek(file, -sizeof(kendaraan), SEEK_CUR);
-            fwrite(&k, sizeof(kendaraan), 1, file);
-
+            fseek(f, -(long)sizeof(Kendaraan), SEEK_CUR);
+            fwrite(&k, sizeof(Kendaraan), 1, f);
             found = 1;
+            printf("Data Kendaraan berhasil diperbaharui!\n");
             break;
-
         }
     }
-    fclose(file);
 
-    if (!found)
-        printf ("Nomor Plat Berhasil Diubah\n");
-    else
-        printf("Data tidak ditemukan");
+    if (!found) {
+        printf("\nData Kendaraan dengan ID %d tidak ditemukan!\n", target);
+    }
+    fclose(f);
 }
 
-void hapusdata(char * transFile) {
-    FILE* file = fopen(transFile, "rb");
-    FILE *temp = fopen("temp.dat","wb");
-    kendaraan k ;
-    int target ;
-    int found = 0;
+void hapusKendaraan() {
+    FILE *f = fopen(KENDARAAN_FILE, "rb");
+    FILE *temp = fopen("temp.dat", "wb");
+    Kendaraan k;
+    int target, found = 0;
 
-    if (!file) {
-        printf ("Arsip tidak ada\n");
-        return;
-    }
+    if (!f) { printf("\nFile tidak ditemukan.\n"); return; }
 
-    printf("Masukkan ID Kendaraan Yang Akan Dihapus : ");
-    scanf("%d",&target);
+    printf("\n*** Hapus Data Kendaraan ***\n");
+    printf("ID Kendaraan : ");
+    scanf("%d", &target);
 
-    while (fread(&k, sizeof(kendaraan), 1, file)) {
-        if (k.id == target) {
-            fwrite(&k, sizeof(kendaraan), 1, temp);
+    while (fread(&k, sizeof(Kendaraan), 1, f)) {
+        if (k.id != target) {
+            fwrite(&k, sizeof(Kendaraan), 1, temp);
         } else {
             found = 1;
         }
     }
-    fclose(file);
+    fclose(f);
     fclose(temp);
 
-    remove (transFile);
-    rename("temp.dat", transFile);
-
-    if (found)
-        printf("Data berhasil dihapus");
-    else
-        printf("Data tidak ditemukan");
+    if (found) {
+        remove(KENDARAAN_FILE);
+        rename("temp.dat", KENDARAAN_FILE);
+        printf("Data berhasil dihapus!\n");
+    } else {
+        remove("temp.dat");
+        printf("Data Kendaraan dengan ID %d tidak ditemukan!\n", target);
+    }
 }
