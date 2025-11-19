@@ -3,8 +3,9 @@ project(ProyekKonsolGit C)
 
 set(CMAKE_C_STANDARD 23)
 
-add_executable(ProyekKonsolGit main.c
-        Records.c
-        Reading.c
-        Copying.c
+add_executable(ProyekKonsolGit
+        #Reading.c
+        DataKendaraan.c
+        #Copy.c
+        #Records.c
 )
